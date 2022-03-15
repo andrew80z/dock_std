@@ -1,6 +1,27 @@
 ---
 version: "3.9"  # optional since v1.27.0
-services: 
+  postgres_password:
+    file: secrets/postgres_password
+
+services:
+  postgres:
+    image: postgres:14-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
+      POSTGRES_DB: test1
+    ports:
+      - 5432:5432
+    secrets:
+      - postgres_password
+    volumes:
+      - ./pg-data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready --dbname=test1 --username=postgres" ]
+      interval: 5s
+      timeout: 15s
+      retries: 5
+
   test1:
     image: ghcr.io/andrew80z/test1:0.0.1
     ports:
